@@ -1,70 +1,108 @@
+[<img alt="Anedya Documentation" src="https://img.shields.io/badge/Anedya-Documentation-blue?style=for-the-badge">](https://docs.anedya.io?utm_source=github&utm_medium=link&utm_campaign=github-sdk&utm_content=react)
+
+
+<!---<div style="width:20%; margin:0 auto;margin-bottom:50px;margin-top:50px;">-->
+<p align="center">
+    <img src="https://cdn.anedya.io/anedya_black_banner.png" alt="Logo">
+</p>
+<!--</div>-->
+
 # Anedya Dashboard Canvas
 
-A modern, production-ready IoT dashboard built with React, Vite, Tailwind CSS, Supabase, and Anedya.
+A starter project for building secure, multi-device IoT dashboards with Anedya telemetry and Supabase backend services.
 
-This dashboard gives you real-time data visualization, historical trend analysis, remote device control, and multi-user access management right out of the box.
+It is designed for teams who want to launch an IoT dashboard quickly with authentication, device management, and configurable dashboard widgets already in place.
 
 ![Screenshot](screenshot.png) _(Note: Replace with your actual screenshot later)_
 
 ## ✨ Features
 
-- **Dynamic Dashboard Builder:** Drag-and-drop to customize gauge charts, line graphs, and control switches.
-- **Real-time Synchronization:** Get instant sensor updates powered by Anedya.
-- **Secure Access Control:** Admin vs User roles, Row Level Security (RLS) ensures users only see what they're assigned to.
-- **Zero-Config Deployment:** Automatic database migration and API deployment using GitHub Actions.
+- **Device-focused dashboard UI:** View live telemetry, status, and trends per device using Anedya APIs.
+- **Dashboard template builder:** Design a shared dashboard layout with drag-and-drop sections and widgets (gauge, historical trend, value display, and value-store widgets).
+- **Live + historical data views:** Use auto-refresh for real-time monitoring and date-range selection for historical analysis.
+- **Write actions to devices:** Update device settings from the dashboard.
+- **User and device access control:** Create users, assign device-level access, and manage permissions.
+- **Deployment-ready setup:** Supabase migrations/functions via GitHub Actions and frontend deployment on Vercel.
 
 ---
 
-## 🚀 One-Click Deployment (Recommended)
+## 🚀 Deployment Flow (Recommended)
 
-You can deploy the entire stack—Frontend, Database, and Edge Functions—in a few minutes without touching the command line.
+Follow this exact order for a smooth deployment.
 
-### Step 1: Prepare Your Supabase Project
+### Step 1: Fork this repository
 
-1. Create a free account and project on [Supabase](https://supabase.com).
-2. Note your **Project URL** and **anon key** (Settings → API).
-3. Note your **Project Reference ID** (the random string in your URL like `https://[xyz123].supabase.co`).
-4. Generate and note an **Access Token** Account Settings → Access Tokens[Link](https://supabase.com/dashboard/account/tokens).
+1. Click **Fork** (top-right on GitHub).
+2. Continue all setup from your own fork.
 
-### Step 2: Prepare Your Anedya Project
+### Step 2: Create your Supabase account and project
 
-1. Create a project on [Anedya](https://anedya.io).
-2. Generate an **API Key**.
+1. Create a free account and a new project on [Supabase](https://supabase.com).
+2. Save these values from your Supabase dashboard:
+   - **Project URL** (Project Settings → API)
+   - **Anon key** (Project Settings → API)
+   - **Project Reference ID** (the `<project-ref>` in `https://<project-ref>.supabase.co`)
+   - **Database password** (the password for this Supabase project)
+   - **Personal Access Token** ([Account Settings → Access Tokens](https://supabase.com/dashboard/account/tokens))
 
-### Step 3: Fork and Automate ⚙️
+### Step 3: In your fork, add GitHub secrets and run workflow
 
-We use GitHub Actions to automatically build your database and deploy the edge APIs.
+1. Open your forked repo → **Settings → Secrets and variables → Actions**.
+2. Add these **New repository secrets**:
+   - `SUPABASE_ACCESS_TOKEN`
+   - `SUPABASE_PROJECT_ID`
+   - `SUPABASE_DB_PASSWORD`
+3. Open **Actions** → select **"🚀 Deploy to Supabase"** → click **Run workflow**.
+4. Wait for the workflow to finish successfully.
 
-1. **Fork this repository** to your own GitHub account.
-2. Go to your fork's **Settings → Secrets and variables → Actions**.
-3. Add these three **New repository secrets**:
-   - `SUPABASE_ACCESS_TOKEN` (From Step 1)
-   - `SUPABASE_PROJECT_ID` (From Step 1)
-   - `SUPABASE_DB_PASSWORD` (Your database password)
-4. Go to the **Actions** tab in GitHub at the top of your repository.
-5. On the left side, under "Workflows", click on **"🚀 Deploy to Supabase"**.
-6. On the right side, click the gray **"Run workflow ▾"** dropdown, and then click the green **"Run workflow"** button.
+> ✅ This creates the database schema, RLS policies, and deploys the required Supabase Edge Functions.
 
-> ✅ _This will instantly create all database tables, policies, and API endpoints for your frontend to use._
+### Step 4: Create and copy your Anedya API key
 
-### Step 4: Deploy the Frontend
+1. Sign in at [Anedya](https://anedya.io) and create a project.
+2. Generate an API key.
+3. Keep the key ready for Vercel environment variables.
 
-Click the button below to deploy your frontend to Vercel for free.
+### Step 5: Deploy frontend on Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fsurajmaurya-git%2Fanedya-react-iot-dashboard&env=VITE_SUPABASE_PROJECT_URL,VITE_SUPABASE_ANON_KEY,VITE_ANEDYA_API_KEY&envDescription=Find%20Supabase%20keys%20in%20Project%20Settings%20%E2%86%92%20API.%20Find%20Anedya%20key%20in%20your%20Anedya%20project.&envLink=https%3A%2F%2Fgithub.com%2Fsurajmaurya-git%2Fanedya-react-iot-dashboard%23environment-variables&project-name=anedya-iot-dashboard&repository-name=anedya-iot-dashboard)
+Deploy your **forked repository** on Vercel.
 
-During deployment, Vercel will ask for:
+Click the button below to open Vercel's import flow:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+Then:
+
+1. Choose **Import Git Repository**.
+2. Select your fork (for example: `<your-github-username>/anedya-dashboard-canvas`).
+3. Add the environment variables below.
+4. Click **Deploy**.
+
+Vercel will ask for:
 
 - `VITE_SUPABASE_PROJECT_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_ANEDYA_API_KEY`
+- `VITE_APP_NAME` (optional)
 
-### Step 5: Run the Setup Wizard
+### Step 6: Run first-time setup
 
-1. Visit your new Vercel URL.
-2. The login page will automatically detect that no admin exists and prompt you to run the **Initial System Setup**.
-3. Create your admin account. The setup page will then permanently disable itself for security.
-4. **Done!** You can now log in, invite users, and bind Anedya edge devices.
+1. Open your deployed Vercel URL.
+2. The app detects that no admin exists and opens the initial setup flow.
+3. Create your admin account.
+4. Done. You can now log in, add users, and assign devices.
+
+### Quick Reference: Values You Need
+
+| Where used | Name | Source |
+| --- | --- | --- |
+| GitHub Actions Secret | `SUPABASE_ACCESS_TOKEN` | Supabase Account Settings → Access Tokens |
+| GitHub Actions Secret | `SUPABASE_PROJECT_ID` | Supabase project reference ID |
+| GitHub Actions Secret | `SUPABASE_DB_PASSWORD` | Supabase project database password |
+| Vercel Environment Variable | `VITE_SUPABASE_PROJECT_URL` | Supabase Project Settings → API |
+| Vercel Environment Variable | `VITE_SUPABASE_ANON_KEY` | Supabase Project Settings → API |
+| Vercel Environment Variable | `VITE_ANEDYA_API_KEY` | Anedya project API key |
+| Vercel Environment Variable (optional) | `VITE_APP_NAME` | Any app display name you choose |
 
 ---
 
@@ -74,8 +112,8 @@ If you'd prefer to run the code locally:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/surajmaurya-git/anedya-react-iot-dashboard.git
-cd anedya-react-iot-dashboard
+git clone https://github.com/anedyaio/anedya-dashboard-canvas.git
+cd anedya-dashboard-canvas
 
 # 2. Install dependencies
 npm install
