@@ -1,0 +1,352 @@
+import React, { useState, useEffect } from 'react';
+import { useBuilderStore } from '../../store/useBuilderStore';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, X, Palette } from 'lucide-react';
+import type { ValueMapping } from './widgets/ValueDisplayWidget';
+
+export default function PropertiesPanel() {
+  const { selectedWidgetId, widgets, updateWidgetTitle, updateWidgetConfig } = useBuilderStore();
+
+  const widget = selectedWidgetId ? widgets[selectedWidgetId] : null;
+
+  const [draftTitle, setDraftTitle] = useState('');
+  const [draftConfig, setDraftConfig] = useState<any>({});
+
+  useEffect(() => {
+    if (widget) {
+      setDraftTitle(widget.title);
+      setDraftConfig(widget.config);
+    }
+  }, [selectedWidgetId]); // Reset draft when selection changes
+
+  if (!selectedWidgetId || !widget) {
+    return (
+      <div className="w-72 border-l bg-gray-50 p-4 text-center text-sm text-gray-500 h-full flex items-center justify-center">
+        Select a component to edit its properties
+      </div>
+    );
+  }
+
+  const handleConfigChange = (updates: any) => {
+    const newConfig = { ...draftConfig, ...updates };
+    setDraftConfig(newConfig);
+    updateWidgetConfig(selectedWidgetId, newConfig);
+  };
+
+  const handleTitleChange = (newTitle: string) => {
+    setDraftTitle(newTitle);
+    updateWidgetTitle(selectedWidgetId, newTitle);
+  };
+
+  return (
+    <div className="w-72 border-l bg-white flex flex-col h-full">
+      <div className="p-4 border-b font-medium bg-gray-50">
+        Properties
+      </div>
+      <div className="p-4 flex-1 overflow-y-auto space-y-6">
+        <div className="space-y-2">
+          <Label>Widget Type</Label>
+          <div className="text-sm px-3 py-2 bg-gray-100 rounded text-gray-600 font-mono">
+            {widget.type}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Title</Label>
+          <Input 
+            value={draftTitle}
+            onChange={(e) => handleTitleChange(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Device Data Key (API binding)</Label>
+          <Input 
+            placeholder="e.g. temperature" 
+            value={draftConfig.deviceKey || ''}
+            onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">The identifier in the Anedya API response</p>
+        </div>
+
+        {/* Dynamic fields based on type */}
+        {widget.type === 'KeyValueCard' && (
+          <div className="space-y-2">
+            <Label>Unit symbol</Label>
+            <Input 
+              placeholder="e.g. °C, %" 
+              value={draftConfig.unit || ''}
+              onChange={(e) => handleConfigChange({ unit: e.target.value })}
+            />
+          </div>
+        )}
+
+        {widget.type === 'GaugeWidget' && (
+          <>
+            <div className="space-y-2">
+              <Label>Unit symbol</Label>
+              <Input 
+                placeholder="e.g. °C, %" 
+                value={draftConfig.unit || ''}
+                onChange={(e) => handleConfigChange({ unit: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Minimum Value</Label>
+              <Input 
+                type="number"
+                placeholder="e.g. -50" 
+                value={draftConfig.min !== undefined ? draftConfig.min : ''}
+                onChange={(e) => handleConfigChange({ min: e.target.value ? Number(e.target.value) : undefined })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Maximum Value</Label>
+              <Input 
+                type="number"
+                placeholder="e.g. 50" 
+                value={draftConfig.max !== undefined ? draftConfig.max : ''}
+                onChange={(e) => handleConfigChange({ max: e.target.value ? Number(e.target.value) : undefined })}
+              />
+            </div>
+          </>
+        )}
+
+        {widget.type === 'StatusIndicator' && (
+           <>
+              <div className="space-y-2">
+                <Label>Operator</Label>
+                <Select 
+                   value={draftConfig.operator || '>'} 
+                   onValueChange={(val) => handleConfigChange({ operator: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value=">">Greater than</SelectItem>
+                    <SelectItem value="<">Less than</SelectItem>
+                    <SelectItem value="==">Equals to</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Threshold Value</Label>
+                <Input 
+                  type="number"
+                  placeholder="e.g. 50" 
+                  value={draftConfig.threshold || ''}
+                  onChange={(e) => handleConfigChange({ threshold: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">Green when condition matches, Red otherwise</p>
+              </div>
+           </>
+        )}
+
+        {widget.type === 'HistoricalTrendWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Unit symbol</Label>
+              <Input 
+                placeholder="e.g. °C, %" 
+                value={draftConfig.unit || ''}
+                onChange={(e) => handleConfigChange({ unit: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Stroke Color</Label>
+              <Input 
+                type="color"
+                className="h-10 px-2"
+                value={draftConfig.strokeColor || '#0ea5e9'}
+                onChange={(e) => handleConfigChange({ strokeColor: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+
+        {widget.type === 'ValueDisplayWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Data Source</Label>
+              <Select 
+                value={draftConfig.dataSource || 'valuestore'} 
+                onValueChange={(val) => handleConfigChange({ dataSource: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select data source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="valuestore">Valuestore</SelectItem>
+                  <SelectItem value="variable">Variable</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {(draftConfig.dataSource || 'valuestore') === 'valuestore' 
+                  ? 'Fetches value from Anedya ValueStore API'
+                  : 'Fetches latest data point from Anedya Data API'}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Unit symbol</Label>
+              <Input 
+                placeholder="e.g. °C, %" 
+                value={draftConfig.unit || ''}
+                onChange={(e) => handleConfigChange({ unit: e.target.value })}
+              />
+            </div>
+
+            {/* ── Value Mappings ── */}
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5">
+                  <Palette className="h-3.5 w-3.5" />
+                  Value Mappings
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const current: ValueMapping[] = draftConfig.valueMappings || [];
+                    handleConfigChange({
+                      valueMappings: [
+                        ...current,
+                        { id: `m-${Date.now()}`, operator: '==', compareValue: '', displayText: '', color: '' },
+                      ],
+                    });
+                  }}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add Rule
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Show custom text when the value matches a condition. Rules are checked top-to-bottom; first match wins.
+              </p>
+
+              {(draftConfig.valueMappings as ValueMapping[] || []).map((mapping: ValueMapping, idx: number) => (
+                <div key={mapping.id} className="border rounded-lg p-3 space-y-2 bg-gray-50 relative">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-1 right-1 h-6 w-6 text-muted-foreground hover:text-destructive"
+                    onClick={() => {
+                      const updated = (draftConfig.valueMappings as ValueMapping[]).filter(
+                        (_: ValueMapping, i: number) => i !== idx
+                      );
+                      handleConfigChange({ valueMappings: updated });
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+
+                  <div className="flex gap-2 items-center pr-6">
+                    <span className="text-xs text-muted-foreground shrink-0">If value</span>
+                    <Select
+                      value={mapping.operator}
+                      onValueChange={(val) => {
+                        const updated = [...(draftConfig.valueMappings as ValueMapping[])];
+                        updated[idx] = { ...updated[idx], operator: val as ValueMapping['operator'] };
+                        handleConfigChange({ valueMappings: updated });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 w-[80px] text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="==">==</SelectItem>
+                        <SelectItem value="!=">!=</SelectItem>
+                        <SelectItem value=">">&gt;</SelectItem>
+                        <SelectItem value="<">&lt;</SelectItem>
+                        <SelectItem value=">=">&gt;=</SelectItem>
+                        <SelectItem value="<=">&lt;=</SelectItem>
+                        <SelectItem value="contains">contains</SelectItem>
+                        <SelectItem value="startsWith">starts with</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      className="h-8 text-xs flex-1"
+                      placeholder="Compare value"
+                      value={mapping.compareValue}
+                      onChange={(e) => {
+                        const updated = [...(draftConfig.valueMappings as ValueMapping[])];
+                        updated[idx] = { ...updated[idx], compareValue: e.target.value };
+                        handleConfigChange({ valueMappings: updated });
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 items-center">
+                    <span className="text-xs text-muted-foreground shrink-0">Show</span>
+                    <Input
+                      className="h-8 text-xs flex-1"
+                      placeholder="Display text"
+                      value={mapping.displayText}
+                      onChange={(e) => {
+                        const updated = [...(draftConfig.valueMappings as ValueMapping[])];
+                        updated[idx] = { ...updated[idx], displayText: e.target.value };
+                        handleConfigChange({ valueMappings: updated });
+                      }}
+                    />
+                    <Input
+                      type="color"
+                      className="h-8 w-10 p-0.5 cursor-pointer"
+                      title="Text color (optional)"
+                      value={mapping.color || '#22c55e'}
+                      onChange={(e) => {
+                        const updated = [...(draftConfig.valueMappings as ValueMapping[])];
+                        updated[idx] = { ...updated[idx], color: e.target.value };
+                        handleConfigChange({ valueMappings: updated });
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {widget.type === 'ValueStoreWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Data Source</Label>
+              <Select 
+                value={draftConfig.dataSource || 'valuestore'} 
+                onValueChange={(val) => handleConfigChange({ dataSource: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select data source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="valuestore">Valuestore</SelectItem>
+                  <SelectItem value="variable">Variable</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {(draftConfig.dataSource || 'valuestore') === 'valuestore' 
+                  ? 'Read & write via Anedya ValueStore API'
+                  : 'Read-only from Anedya Data API (Set disabled)'}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Unit symbol</Label>
+              <Input 
+                placeholder="e.g. °C, seconds" 
+                value={draftConfig.unit || ''}
+                onChange={(e) => handleConfigChange({ unit: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">Optional unit label shown next to the input</p>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
