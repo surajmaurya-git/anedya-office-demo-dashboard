@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
+import GeometricLoader from "@/components/GeometricLoader";
 import {
   Select,
   SelectContent,
@@ -393,19 +394,7 @@ const Home: React.FC<HomeProps> = ({
         )}
 
         {isLoading ? (
-          <Card>
-            <CardHeader className="pb-5 ">
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-7 w-5 text-primary" />
-                Real-time Sensor Values
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-center py-8">
-                <Skeleton className="h-40 w-full max-w-2xl" />
-              </div>
-            </CardContent>
-          </Card>
+          <GeometricLoader />
         ) : dashboardSchema &&
           dashboardSchema.layout &&
           dashboardSchema.layout.length > 0 ? (
