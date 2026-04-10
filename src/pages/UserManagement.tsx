@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, UserPlus, Shield, Smartphone, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
-import { useUsers, useDeleteUser, useAssignDevice, useUnassignDevice, useUpdateUserRole } from "@/hooks/useUsers";
+import { Users, UserPlus, Shield, Smartphone, Trash2, Loader2, Eye, EyeOff, Search, CheckSquare, Square } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUsers, useUpdateUserRole, useAssignDevice, useUnassignDevice, useBulkAssignDevices, useBulkUnassignDevices, useDeleteUser } from "@/hooks/useUsers";
 import { useDevices } from "@/hooks/useDevices";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,8 +20,12 @@ const UserManagement = () => {
   const { data: users = [], isLoading: usersLoading } = useUsers();
   const { data: allDevices = [], isLoading: devicesLoading } = useDevices();
   const deleteUser = useDeleteUser();
+  
   const assignDevice = useAssignDevice();
   const unassignDevice = useUnassignDevice();
+  const updateUserRole = useUpdateUserRole();
+  const bulkAssign = useBulkAssignDevices();
+  const bulkUnassign = useBulkUnassignDevices();
 
   // New User Form State
   const [email, setEmail] = useState("");
@@ -28,8 +33,14 @@ const UserManagement = () => {
   const [role, setRole] = useState<'viewer' | 'editor'>('viewer');
   const [showPassword, setShowPassword] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [deviceSearch, setDeviceSearch] = useState("");
 
-  const updateUserRole = useUpdateUserRole();
+  const isBulkOperating = bulkAssign.isPending || bulkUnassign.isPending;
+
+  const filteredDevices = allDevices.filter(d => 
+    d.title.toLowerCase().includes(deviceSearch.toLowerCase()) || 
+    d.id.toLowerCase().includes(deviceSearch.toLowerCase())
+  );
 
   // Use the Edge Function to create users (bypasses default signup limits)
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -66,20 +77,6 @@ const UserManagement = () => {
       toast.success("User deleted successfully!");
     } catch (err: any) {
       toast.error(err.message);
-    }
-  };
-
-  const handleToggleDevice = async (userId: string, deviceId: string, currentlyAssigned: boolean) => {
-    try {
-      if (currentlyAssigned) {
-        await unassignDevice.mutateAsync({ userId, deviceId });
-        toast.info("Device unassigned");
-      } else {
-        await assignDevice.mutateAsync({ userId, deviceId });
-        toast.success("Device assigned");
-      }
-    } catch (error: any) {
-      toast.error("Failed to update assignment");
     }
   };
 
@@ -233,39 +230,116 @@ const UserManagement = () => {
                       {/* Device Assignments */}
                       {user.role !== 'admin' && (
                         <div className="mt-4 pt-4 border-t">
-                          <Label className="text-sm font-semibold mb-3 block flex items-center gap-2">
-                            <Smartphone className="h-4 w-4" /> Assigned Devices
-                          </Label>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <Label className="text-sm font-semibold flex items-center gap-2">
+                              <Smartphone className="h-4 w-4" /> Assigned Devices
+                              <span className="text-xs font-normal text-muted-foreground ml-2">
+                                ({user.devices.length} assigned)
+                              </span>
+                            </Label>
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="relative">
+                                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search devices..."
+                                  className="h-8 w-[150px] lg:w-[200px] pl-8 text-xs"
+                                  value={deviceSearch}
+                                  onChange={(e) => setDeviceSearch(e.target.value)}
+                                />
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-xs gap-1.5"
+                                disabled={isBulkOperating}
+                                onClick={() => {
+                                  const alreadyAssigned = new Set(user.devices);
+                                  
+                                  if (user.devices.length === allDevices.length) {
+                                    // Deselect All
+                                    bulkUnassign.mutate({ 
+                                      userId: user.id, 
+                                      deviceIds: user.devices 
+                                    });
+                                    toast.info("Unassigning all devices...");
+                                  } else {
+                                    // Select All (only assign those not already assigned)
+                                    const toAssign = allDevices
+                                      .map(d => d.id)
+                                      .filter(id => !alreadyAssigned.has(id));
+                                    
+                                    bulkAssign.mutate({ 
+                                      userId: user.id, 
+                                      deviceIds: toAssign 
+                                    });
+                                    toast.success(`Assigning ${toAssign.length} devices...`);
+                                  }
+                                }}
+                              >
+                                {isBulkOperating ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : user.devices.length === allDevices.length ? (
+                                  <><Square className="h-3.5 w-3.5" /> Deselect All</>
+                                ) : (
+                                  <><CheckSquare className="h-3.5 w-3.5" /> Select All</>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+
                           {allDevices.length === 0 ? (
                             <p className="text-xs text-muted-foreground">No devices exist in the system yet.</p>
                           ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              {allDevices.map((device) => {
-                                const isAssigned = user.devices.includes(device.id);
-                                return (
-                                  <div 
-                                    key={device.id} 
-                                    className={`flex items-center space-x-2 border rounded p-2 transition-colors ${
-                                      isAssigned ? 'bg-primary/5 border-primary/20' : 'hover:bg-accent'
-                                    }`}
-                                  >
-                                    <Checkbox 
-                                      id={`assign-${user.id}-${device.id}`}
-                                      checked={isAssigned}
-                                      onCheckedChange={() => handleToggleDevice(user.id, device.id, isAssigned)}
-                                    />
-                                    <div className="flex-1 min-w-0 h-full w-full">
-                                      <Label 
-                                        htmlFor={`assign-${user.id}-${device.id}`} 
-                                        className="text-sm font-medium cursor-pointer truncate block w-full h-full"
-                                      >
-                                        {device.title}
-                                      </Label>
-                                    </div>
+                            <ScrollArea className="h-[280px] rounded-md border p-4 bg-muted/10">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {filteredDevices.length === 0 ? (
+                                  <div className="col-span-full py-8 text-center text-xs text-muted-foreground">
+                                    No devices matching "{deviceSearch}"
                                   </div>
-                                );
-                              })}
-                            </div>
+                                ) : (
+                                  filteredDevices.map((device) => {
+                                    const isAssigned = user.devices.includes(device.id);
+                                    const isPending = (assignDevice.isPending && assignDevice.variables?.deviceId === device.id) || 
+                                                     (unassignDevice.isPending && unassignDevice.variables?.deviceId === device.id);
+
+                                    return (
+                                      <div 
+                                        key={device.id} 
+                                        className={`flex items-center space-x-2 border rounded p-2 transition-colors ${
+                                          isAssigned ? 'bg-primary/5 border-primary/20' : 'hover:bg-accent'
+                                        } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      >
+                                        <Checkbox 
+                                          id={`device-${user.id}-${device.id}`}
+                                          checked={isAssigned}
+                                          disabled={isPending || isBulkOperating}
+                                          onCheckedChange={(checked) => {
+                                            if (checked) {
+                                              assignDevice.mutate({ userId: user.id, deviceId: device.id });
+                                            } else {
+                                              unassignDevice.mutate({ userId: user.id, deviceId: device.id });
+                                            }
+                                          }}
+                                        />
+                                        <div className="grid gap-0.5 leading-none">
+                                          <label
+                                            htmlFor={`device-${user.id}-${device.id}`}
+                                            className="text-xs font-medium leading-none cursor-pointer"
+                                          >
+                                            {device.title}
+                                          </label>
+                                          <p className="text-[10px] text-muted-foreground truncate w-full max-w-[120px]">
+                                            {device.id}
+                                          </p>
+                                        </div>
+                                        {isPending && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </ScrollArea>
                           )}
                         </div>
                       )}

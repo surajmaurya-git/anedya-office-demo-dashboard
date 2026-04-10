@@ -77,6 +77,31 @@ export function useAssignDevice() {
 }
 
 /**
+ * Admin hook: Bulk assign devices to a user (one request)
+ */
+export function useBulkAssignDevices() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, deviceIds }: { userId: string; deviceIds: string[] }) => {
+      if (deviceIds.length === 0) return;
+      
+      const payload = deviceIds.map(id => ({ user_id: userId, device_id: id }));
+      
+      const { error } = await supabase
+        .from("user_devices")
+        .insert(payload);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+    },
+  });
+}
+
+/**
  * Admin hook: Unassign a device from a user
  */
 export function useUnassignDevice() {
@@ -88,6 +113,31 @@ export function useUnassignDevice() {
         .from("user_devices")
         .delete()
         .match({ user_id: userId, device_id: deviceId });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
+    },
+  });
+}
+
+/**
+ * Admin hook: Bulk unassign devices from a user (one request)
+ */
+export function useBulkUnassignDevices() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ userId, deviceIds }: { userId: string; deviceIds: string[] }) => {
+      if (deviceIds.length === 0) return;
+      
+      const { error } = await supabase
+        .from("user_devices")
+        .delete()
+        .eq("user_id", userId)
+        .in("device_id", deviceIds);
 
       if (error) throw error;
     },

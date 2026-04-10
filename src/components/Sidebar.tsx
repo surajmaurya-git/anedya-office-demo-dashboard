@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useDevices } from '@/hooks/useDevices';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SidebarProps {
   open: boolean;
@@ -93,24 +94,28 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               No devices assigned to you.
             </p>
           ) : (
-            devices.map((device) => {
-              const isActive = location.pathname === device.path;
-              
-              return (
-                <Button
-                  key={device.id}
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3 h-11 pl-6",
-                    isActive && "bg-primary/10 text-primary hover:bg-primary/15"
-                  )}
-                  onClick={() => handleNavigation(device.path)}
-                >
-                  <Wifi className="h-[18px] w-[18px] shrink-0" />
-                  <span className="truncate">{device.title}</span>
-                </Button>
-              );
-            })
+            <div className="max-h-[312px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-1">
+                {devices.map((device) => {
+                  const isActive = location.pathname === device.path;
+                  
+                  return (
+                    <Button
+                      key={device.id}
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start gap-3 h-11 pl-6",
+                        isActive && "bg-primary/10 text-primary hover:bg-primary/15"
+                      )}
+                      onClick={() => handleNavigation(device.path)}
+                    >
+                      <Wifi className="h-[18px] w-[18px] shrink-0" />
+                      <span className="truncate">{device.title}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
         
