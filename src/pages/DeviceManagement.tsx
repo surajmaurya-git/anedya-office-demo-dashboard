@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Wifi, Plus, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
+import { Wifi, Plus, Pencil, Trash2, Check, X, Loader2, Search } from "lucide-react";
 import { useDevices, useAddDevice, useUpdateDevice, useDeleteDevice, Device } from "@/hooks/useDevices";
 import { toast } from "sonner";
 
@@ -13,11 +13,17 @@ const DeviceManagement = () => {
   const [newNodeId, setNewNodeId] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: devices = [], isLoading: devicesLoading } = useDevices();
   const addDevice = useAddDevice();
   const updateDevice = useUpdateDevice();
   const deleteDevice = useDeleteDevice();
+
+  const filteredDevices = devices.filter((device) => 
+    device.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.node_id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleAddDevice = async () => {
     const trimmedTitle = newTitle.trim();
@@ -147,25 +153,39 @@ const DeviceManagement = () => {
             </div>
 
             {/* Devices List */}
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
-                Existing Devices ({devices.length})
-              </p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Existing Devices ({filteredDevices.length})
+                </p>
+                <div className="relative flex-1 max-w-xs">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search devices..."
+                    className="pl-9 h-9 text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
 
               {devicesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : devices.length === 0 ? (
+              ) : filteredDevices.length === 0 ? (
                 <div className="rounded-lg border border-border p-8 text-center">
                   <Wifi className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    No devices added yet. Use the form above to add your first device.
+                    {searchQuery 
+                      ? `No devices found matching "${searchQuery}"` 
+                      : "No devices added yet. Use the form above to add your first device."
+                    }
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {devices.map((device) => (
+                  {filteredDevices.map((device) => (
                     <div
                       key={device.id}
                       className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/50"
