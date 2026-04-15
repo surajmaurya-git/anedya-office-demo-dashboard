@@ -79,8 +79,8 @@ const GaugeChart: React.FC<GaugeChartProps> = ({
   // High temp (positive) is bad/hot -> Red
   const getValueColor = (val: number) => {
     if (val <= 0) return "text-blue-500";
-    if (val < 15) return "text-cyan-600";
-    if (val < 30) return "text-orange-500";
+    if (val < 40) return "text-cyan-600";
+    if (val < 70) return "text-orange-500";
     return "text-red-600"; 
   };
 
