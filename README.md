@@ -80,10 +80,12 @@ Then:
 **Environment Variables:**
 Set the following Vercel environment variables:
 
-- `VITE_SUPABASE_PROJECT_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_ANEDYA_API_KEY`
-- `VITE_APP_NAME` (optional)
+```
+VITE_SUPABASE_PROJECT_URL=""
+VITE_SUPABASE_ANON_KEY=""
+VITE_ANEDYA_API_KEY=""
+VITE_APP_NAME=""
+```
 
 ### Step 6: Run first-time setup
 
