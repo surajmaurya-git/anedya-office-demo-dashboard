@@ -16,6 +16,7 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<string, WidgetSizeConfig> = {
   HistoricalTrendWidget: { minW: 6, minH: 2, maxW: 24, maxH: 24, defaultW: 6, defaultH: 2 },
   ValueDisplayWidget:    { minW: 1, minH: 1, maxW: 12, maxH: 24, defaultW: 3, defaultH: 1.5 },
   ValueStoreWidget:      { minW: 3, minH: 1, maxW: 12, maxH: 12, defaultW: 4, defaultH: 1 },
+  DonutChartWidget:      { minW: 2, minH: 2, maxW: 8, maxH: 8, defaultW: 3, defaultH: 3 },
 };
 
 /** Returns constraints for a widget type, with safe fallback */

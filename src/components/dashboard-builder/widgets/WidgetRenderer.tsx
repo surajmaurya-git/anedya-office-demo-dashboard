@@ -5,6 +5,7 @@ import GaugeWidget from './GaugeWidget';
 import { HistoricalTrendWidget } from './HistoricalTrendWidget';
 import { ValueDisplayWidget } from './ValueDisplayWidget';
 import { ValueStoreWidget } from './ValueStoreWidget';
+import { DonutChartWidget } from './DonutChartWidget';
 import { useWidgetData } from '@/hooks/useWidgetData';
 
 interface WidgetRendererProps {
@@ -79,6 +80,15 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
     case 'ValueStoreWidget':
       return (
         <ValueStoreWidget
+          config={config}
+          nodeId={nodeId}
+          pollIntervalMs={pollIntervalMs}
+          isEditMode={isEditMode}
+        />
+      );
+    case 'DonutChartWidget':
+      return (
+        <DonutChartWidget
           config={config}
           nodeId={nodeId}
           pollIntervalMs={pollIntervalMs}

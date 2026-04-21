@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, X, Palette } from 'lucide-react';
+import { Plus, X, Palette, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ValueMapping } from './widgets/ValueDisplayWidget';
+import type { DonutSeries } from './widgets/DonutChartWidget';
 
 export default function PropertiesPanel() {
   const { selectedWidgetId, widgets, updateWidgetTitle, updateWidgetConfig } = useBuilderStore();
@@ -346,6 +347,188 @@ export default function PropertiesPanel() {
             </div>
           </div>
         )}
+
+        {widget.type === 'DonutChartWidget' && (() => {
+          const series: DonutSeries[] = draftConfig.series || [];
+          const DEFAULT_COLORS = ['#38bdf8', '#22c55e', '#f59e0b', '#a78bfa'];
+
+          const updateSeries = (updated: DonutSeries[]) =>
+            handleConfigChange({ series: updated });
+
+          const addSeries = () => {
+            if (series.length >= 4) return;
+            const next: DonutSeries = {
+              id: `ds-${Date.now()}`,
+              label: `Series ${series.length + 1}`,
+              deviceKey: '',
+              dataSource: 'valuestore',
+              min: 0,
+              max: 100,
+              unit: '',
+              color: DEFAULT_COLORS[series.length] || '#94a3b8',
+            };
+            updateSeries([...series, next]);
+          };
+
+          const removeSeries = (id: string) =>
+            updateSeries(series.filter((s) => s.id !== id));
+
+          const patchSeries = (id: string, patch: Partial<DonutSeries>) =>
+            updateSeries(series.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+
+          return (
+            <div className="space-y-3">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5">
+                  <Palette className="h-3.5 w-3.5" />
+                  Data Series
+                  <span className="text-muted-foreground font-normal">({series.length}/4)</span>
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  disabled={series.length >= 4}
+                  onClick={addSeries}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Each series is an independent concentric ring. Max 4 series.
+              </p>
+
+              {series.length === 0 && (
+                <div className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded-lg">
+                  Click "Add" to add your first data series.
+                </div>
+              )}
+
+              {/* Series cards */}
+              {series.map((s, idx) => (
+                <div
+                  key={s.id}
+                  className="border rounded-lg p-3 space-y-2.5 bg-gray-50 relative"
+                  style={{ borderLeft: `3px solid ${s.color}` }}
+                >
+                  {/* Series header row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className="text-xs font-semibold"
+                      style={{ color: s.color }}
+                    >
+                      Ring {idx + 1}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeSeries(s.id)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  {/* Label */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">Display Label</Label>
+                    <Input
+                      className="h-7 text-xs"
+                      placeholder="e.g. Temperature"
+                      value={s.label}
+                      onChange={(e) => patchSeries(s.id, { label: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Data Source */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">Data Source</Label>
+                    <Select
+                      value={s.dataSource}
+                      onValueChange={(val) =>
+                        patchSeries(s.id, { dataSource: val as 'variable' | 'valuestore' })
+                      }
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="valuestore">Valuestore</SelectItem>
+                        <SelectItem value="variable">Variable</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Device Key */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">Variable / Key</Label>
+                    <Input
+                      className="h-7 text-xs"
+                      placeholder="e.g. temperature"
+                      value={s.deviceKey}
+                      onChange={(e) => patchSeries(s.id, { deviceKey: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Min / Max */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Min</Label>
+                      <Input
+                        type="number"
+                        className="h-7 text-xs"
+                        placeholder="0"
+                        value={s.min}
+                        onChange={(e) =>
+                          patchSeries(s.id, { min: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Max</Label>
+                      <Input
+                        type="number"
+                        className="h-7 text-xs"
+                        placeholder="100"
+                        value={s.max}
+                        onChange={(e) =>
+                          patchSeries(s.id, { max: Number(e.target.value) })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Unit + Color */}
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-xs">Unit</Label>
+                      <Input
+                        className="h-7 text-xs"
+                        placeholder="%, °C …"
+                        value={s.unit}
+                        onChange={(e) => patchSeries(s.id, { unit: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Colour</Label>
+                      <Input
+                        type="color"
+                        className="h-7 w-10 p-0.5 cursor-pointer"
+                        value={s.color}
+                        onChange={(e) => patchSeries(s.id, { color: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
       </div>
     </div>
