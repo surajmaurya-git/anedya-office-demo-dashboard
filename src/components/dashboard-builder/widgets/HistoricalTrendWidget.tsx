@@ -40,7 +40,7 @@ export function HistoricalTrendWidget({
   const deviceKey = config.config.deviceKey;
   const strokeColor = config.config.strokeColor || "hsl(var(--primary))";
   const unit = config.config.unit;
-  
+
   const customRange = useMemo(() => {
     if (isLive || !date?.from) return null;
     const fromTime = new Date(date.from);
@@ -133,6 +133,49 @@ export function HistoricalTrendWidget({
     }
   };
 
+  const stats = useMemo(() => {
+    if (!data || data.length === 0 || !deviceKey) return null;
+
+    let min = Infinity;
+    let max = -Infinity;
+    let minTime = "";
+    let maxTime = "";
+    let sum = 0;
+    let count = 0;
+
+    const lastPoint = data[data.length - 1];
+    const lastValue = lastPoint[deviceKey];
+    const lastTime = lastPoint.time;
+
+    for (const item of data) {
+      const val = Number(item[deviceKey]);
+      if (!isNaN(val)) {
+        if (val < min) {
+          min = val;
+          minTime = item.time;
+        }
+        if (val > max) {
+          max = val;
+          maxTime = item.time;
+        }
+        sum += val;
+        count++;
+      }
+    }
+
+    const avg = count > 0 ? (sum / count).toFixed(1) : '-';
+
+    return {
+      min: min === Infinity ? '-' : min,
+      minTime,
+      max: max === -Infinity ? '-' : max,
+      maxTime,
+      avg,
+      last: lastValue !== undefined ? lastValue : '-',
+      lastTime
+    };
+  }, [data, deviceKey]);
+
   const handleExport = () => {
     if (!data.length) return;
     const headers = ["Date-Time (ISO)", `${config.title} (${config.config.unit || ""})`];
@@ -191,9 +234,9 @@ export function HistoricalTrendWidget({
       </CardHeader>
       <CardContent className="p-0 flex-1 relative min-h-[150px]">
         {isEditMode ? (
-           <div className="absolute inset-4 flex items-center justify-center bg-gray-50 text-gray-400 text-sm rounded outline-dashed outline-2 outline-gray-200">
-             Historical Trend Preview
-           </div>
+          <div className="absolute inset-4 flex items-center justify-center bg-gray-50 text-gray-400 text-sm rounded outline-dashed outline-2 outline-gray-200">
+            Historical Trend Preview
+          </div>
         ) : isLoading && data.length === 0 ? (
           <div className="absolute inset-0 p-4">
             <Skeleton className="w-full h-full" />
@@ -203,63 +246,91 @@ export function HistoricalTrendWidget({
             No data available
           </div>
         ) : (
-          <div className="absolute inset-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id={`gradient-${deviceKey}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={strokeColor} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={strokeColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  className="stroke-border"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="time"
-                  className="text-xs"
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  minTickGap={30}
-                />
-                <YAxis
-                  className="text-xs"
-                  domain={['auto', 'auto']}
-                  tick={{ fill: "hsl(var(--muted-foreground))" }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `${value}`}
-                  width={40}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
-                  formatter={(value: number) =>
-                    unit ? [`${value} ${unit}`, config.title] : [value, config.title]
-                  }
-                  labelStyle={{ color: "hsl(var(--foreground))", fontWeight: "bold", marginBottom: "4px" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey={deviceKey || ""}
-                  stroke={strokeColor}
-                  strokeWidth={3}
-                  fill={`url(#gradient-${deviceKey})`}
-                  dot={false}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <>
+            {stats && (
+              <div className="absolute top-2 right-4 z-10 flex flex-col items-end text-right p-1.5 rounded pointer-events-none">
+                {/* <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider leading-none">Latest Value</span> */}
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-xl font-bold text-slate-800 leading-none">{stats.last}</span>
+                  {unit && <span className="text-xs font-semibold text-muted-foreground">{unit}</span>}
+                </div>
+                <span className="text-[9px] text-muted-foreground mt-0.5 leading-none">{stats.lastTime}</span>
+              </div>
+            )}
+            <div className="absolute inset-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data}>
+                  <defs>
+                    <linearGradient id={`gradient-${deviceKey}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={strokeColor} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={strokeColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="time"
+                    className="text-xs"
+                    tick={{ fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                    minTickGap={30}
+                  />
+                  <YAxis
+                    className="text-xs"
+                    domain={['auto', 'auto']}
+                    tick={{ fill: "hsl(var(--muted-foreground))" }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value}`}
+                    width={40}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    formatter={(value: number) =>
+                      unit ? [`${value} ${unit}`, config.title] : [value, config.title]
+                    }
+                    labelStyle={{ color: "hsl(var(--foreground))", fontWeight: "bold", marginBottom: "4px" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={deviceKey || ""}
+                    stroke={strokeColor}
+                    strokeWidth={3}
+                    fill={`url(#gradient-${deviceKey})`}
+                    dot={false}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </>
         )}
       </CardContent>
+      {stats && (
+        <div className="mt-auto pt-2 pb-2 px-4 border-t border-slate-100 flex justify-between items-center text-xs shrink-0 z-10 bg-white">
+          <div className="flex flex-col items-start truncate max-w-[30%]">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Min</span>
+            <span className="font-medium text-slate-700">{stats.min}{unit ? ` ${unit}` : ''} | {stats.minTime}</span>
+          </div>
+          <div className="flex flex-col items-center truncate max-w-[30%]">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Avg</span>
+            <span className="font-medium text-slate-700">{stats.avg}{unit ? ` ${unit}` : ''}</span>
+          </div>
+          <div className="flex flex-col items-end truncate max-w-[30%]">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Max</span>
+            <span className="font-medium text-slate-700">{stats.max}{unit ? ` ${unit}` : ''} | {stats.maxTime}</span>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
