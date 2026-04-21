@@ -8,6 +8,7 @@ import { ValueStoreWidget } from './ValueStoreWidget';
 import { DonutChartWidget } from './DonutChartWidget';
 import { ToggleSwitchWidget } from './ToggleSwitchWidget';
 import { BatteryWidget } from './BatteryWidget';
+import { SliderWidget } from './SliderWidget';
 import { useWidgetData } from '@/hooks/useWidgetData';
 
 interface WidgetRendererProps {
@@ -109,6 +110,15 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
     case 'BatteryWidget':
       return (
         <BatteryWidget
+          config={config}
+          nodeId={nodeId}
+          pollIntervalMs={pollIntervalMs}
+          isEditMode={isEditMode}
+        />
+      );
+    case 'SliderWidget':
+      return (
+        <SliderWidget
           config={config}
           nodeId={nodeId}
           pollIntervalMs={pollIntervalMs}

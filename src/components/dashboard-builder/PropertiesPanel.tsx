@@ -791,6 +791,105 @@ export default function PropertiesPanel() {
           </div>
         )}
 
+        {/* ── SliderWidget ────────────────────────────────────────── */}
+        {widget.type === 'SliderWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>ValueStore Key</Label>
+              <Input
+                placeholder="e.g. thermostat_setpoint"
+                value={draftConfig.deviceKey || ''}
+                onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                The key in Anedya ValueStore to write the value to.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Expected Data Type</Label>
+              <Select
+                value={draftConfig.dataType || 'float'}
+                onValueChange={(val) => handleConfigChange({ dataType: val })}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Float (Number)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="float">Float (Number)</SelectItem>
+                  <SelectItem value="string">String</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Min</Label>
+                <Input
+                  type="number"
+                  className="h-8 text-xs"
+                  placeholder="0"
+                  value={draftConfig.min ?? '0'}
+                  onChange={(e) => handleConfigChange({ 
+                    min: e.target.value === '' ? undefined : Number(e.target.value) 
+                  })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Max</Label>
+                <Input
+                  type="number"
+                  className="h-8 text-xs"
+                  placeholder="100"
+                  value={draftConfig.max ?? '100'}
+                  onChange={(e) => handleConfigChange({ 
+                    max: e.target.value === '' ? undefined : Number(e.target.value) 
+                  })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Step Size</Label>
+                <Input
+                  type="number"
+                  className="h-8 text-xs"
+                  placeholder="1"
+                  value={draftConfig.step ?? '1'}
+                  onChange={(e) => handleConfigChange({ 
+                    step: e.target.value === '' ? undefined : Number(e.target.value) 
+                  })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Unit</Label>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="e.g. °C"
+                  value={draftConfig.unit || ''}
+                  onChange={(e) => handleConfigChange({ unit: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 border-t pt-3">
+              <Label className="flex items-center gap-1.5">
+                <Palette className="h-3.5 w-3.5" />
+                Track Colour
+              </Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="color"
+                  className="h-8 w-12 p-0.5 cursor-pointer"
+                  value={draftConfig.color || '#0ea5e9'}
+                  onChange={(e) => handleConfigChange({ color: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
