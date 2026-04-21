@@ -63,15 +63,17 @@ export default function PropertiesPanel() {
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Variable / Key</Label>
-          <Input
-            placeholder="e.g. temperature"
-            value={draftConfig.deviceKey || ''}
-            onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
-          />
-          {/* <p className="text-xs text-muted-foreground">The identifier in the Anedya API response</p> */}
-        </div>
+        {/* Global Variable / Key for legacy/simple widgets */}
+        {!['ToggleSwitchWidget', 'SliderWidget', 'TankWidget'].includes(widget.type) && (
+          <div className="space-y-2">
+            <Label>Variable / Key</Label>
+            <Input
+              placeholder="e.g. temperature"
+              value={draftConfig.deviceKey || ''}
+              onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
+            />
+          </div>
+        )}
 
         {/* Dynamic fields based on type */}
         {widget.type === 'GaugeWidget' && (
@@ -653,7 +655,7 @@ export default function PropertiesPanel() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Min (0%)</Label>
@@ -662,8 +664,8 @@ export default function PropertiesPanel() {
                   className="h-8 text-xs"
                   placeholder="0"
                   value={draftConfig.min ?? '0'}
-                  onChange={(e) => handleConfigChange({ 
-                    min: e.target.value === '' ? undefined : Number(e.target.value) 
+                  onChange={(e) => handleConfigChange({
+                    min: e.target.value === '' ? undefined : Number(e.target.value)
                   })}
                 />
               </div>
@@ -674,8 +676,8 @@ export default function PropertiesPanel() {
                   className="h-8 text-xs"
                   placeholder="100"
                   value={draftConfig.max ?? '100'}
-                  onChange={(e) => handleConfigChange({ 
-                    max: e.target.value === '' ? undefined : Number(e.target.value) 
+                  onChange={(e) => handleConfigChange({
+                    max: e.target.value === '' ? undefined : Number(e.target.value)
                   })}
                 />
               </div>
@@ -830,8 +832,8 @@ export default function PropertiesPanel() {
                   className="h-8 text-xs"
                   placeholder="0"
                   value={draftConfig.min ?? '0'}
-                  onChange={(e) => handleConfigChange({ 
-                    min: e.target.value === '' ? undefined : Number(e.target.value) 
+                  onChange={(e) => handleConfigChange({
+                    min: e.target.value === '' ? undefined : Number(e.target.value)
                   })}
                 />
               </div>
@@ -842,8 +844,8 @@ export default function PropertiesPanel() {
                   className="h-8 text-xs"
                   placeholder="100"
                   value={draftConfig.max ?? '100'}
-                  onChange={(e) => handleConfigChange({ 
-                    max: e.target.value === '' ? undefined : Number(e.target.value) 
+                  onChange={(e) => handleConfigChange({
+                    max: e.target.value === '' ? undefined : Number(e.target.value)
                   })}
                 />
               </div>
@@ -857,8 +859,8 @@ export default function PropertiesPanel() {
                   className="h-8 text-xs"
                   placeholder="1"
                   value={draftConfig.step ?? '1'}
-                  onChange={(e) => handleConfigChange({ 
-                    step: e.target.value === '' ? undefined : Number(e.target.value) 
+                  onChange={(e) => handleConfigChange({
+                    step: e.target.value === '' ? undefined : Number(e.target.value)
                   })}
                 />
               </div>
@@ -885,6 +887,104 @@ export default function PropertiesPanel() {
                   value={draftConfig.color || '#0ea5e9'}
                   onChange={(e) => handleConfigChange({ color: e.target.value })}
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TankWidget ────────────────────────────────────────── */}
+        {widget.type === 'TankWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Data Source</Label>
+              <Select
+                value={draftConfig.dataSource || 'variable'}
+                onValueChange={(val) => handleConfigChange({ dataSource: val, deviceKey: '' })}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Variable" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="variable">Variable</SelectItem>
+                  <SelectItem value="valuestore">ValueStore</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{draftConfig.dataSource === 'valuestore' ? 'Valuestore Key' : 'Variable Identifier'}</Label>
+              <Input
+                placeholder="e.g. water_level"
+                value={draftConfig.deviceKey || ''}
+                onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tank Shape</Label>
+              <Select
+                value={draftConfig.shape || 'cylinder'}
+                onValueChange={(val) => handleConfigChange({ shape: val })}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Cylinder" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cylinder">Silo / Cylinder</SelectItem>
+                  <SelectItem value="rectangle">Bar / Rectangle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Min Value</Label>
+                <Input
+                  type="number"
+                  className="h-8 text-xs"
+                  placeholder="0"
+                  value={draftConfig.min ?? '0'}
+                  onChange={(e) => handleConfigChange({
+                    min: e.target.value === '' ? undefined : Number(e.target.value)
+                  })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Max Value</Label>
+                <Input
+                  type="number"
+                  className="h-8 text-xs"
+                  placeholder="100"
+                  value={draftConfig.max ?? '100'}
+                  onChange={(e) => handleConfigChange({
+                    max: e.target.value === '' ? undefined : Number(e.target.value)
+                  })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 border-t pt-3">
+              <div className="grid grid-cols-2 gap-3 items-end">
+                <div className="space-y-1">
+                  <Label className="text-xs">Unit String</Label>
+                  <Input
+                    className="h-8 text-xs"
+                    placeholder="e.g. L, %, m"
+                    value={draftConfig.unit || ''}
+                    onChange={(e) => handleConfigChange({ unit: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1 flex flex-col">
+                  <Label className="text-xs mb-1">Liquid Color</Label>
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="color"
+                      className="h-8 w-12 p-0.5 cursor-pointer"
+                      value={draftConfig.color || '#3b82f6'}
+                      onChange={(e) => handleConfigChange({ color: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

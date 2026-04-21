@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gauge, LineChart, Hash, Settings, PieChart, ToggleRight, Battery, SlidersHorizontal } from 'lucide-react';
+import { Gauge, LineChart, Hash, Settings, PieChart, ToggleRight, Battery, SlidersHorizontal, Cylinder } from 'lucide-react';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { WIDGET_SIZE_CONSTRAINTS } from './widgetConfig';
 
@@ -13,6 +13,7 @@ const WIDGET_TYPES = [
   { id: 'ToggleSwitchWidget', name: 'Toggle Switch',         icon: <ToggleRight size={18} /> },
   { id: 'BatteryWidget',      name: 'Battery Level',         icon: <Battery size={18} /> },
   { id: 'SliderWidget',       name: 'Slider',                icon: <SlidersHorizontal size={18} /> },
+  { id: 'TankWidget',         name: 'Tank Level',            icon: <Cylinder size={18} /> },
 ];
 
 export default function ComponentSidebar() {
