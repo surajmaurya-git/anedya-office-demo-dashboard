@@ -40,6 +40,13 @@ export function HistoricalTrendWidget({
   const deviceKey = config.config.deviceKey;
   const strokeColor = config.config.strokeColor || "hsl(var(--primary))";
   const unit = config.config.unit;
+  
+  const showLatest = config.config.showLatest !== false;
+  const showMin = config.config.showMin !== false;
+  const showAvg = config.config.showAvg !== false;
+  const showMax = config.config.showMax !== false;
+  const showFooter = showMin || showAvg || showMax;
+
 
   const customRange = useMemo(() => {
     if (isLive || !date?.from) return null;
@@ -247,7 +254,7 @@ export function HistoricalTrendWidget({
           </div>
         ) : (
           <>
-            {stats && (
+            {stats && showLatest && (
               <div className="absolute top-2 right-4 z-10 flex flex-col items-end text-right p-1.5 rounded pointer-events-none">
                 {/* <span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider leading-none">Latest Value</span> */}
                 <div className="flex items-baseline gap-1 mt-0.5">
@@ -315,20 +322,28 @@ export function HistoricalTrendWidget({
           </>
         )}
       </CardContent>
-      {stats && (
-        <div className="mt-auto pt-2 pb-2 px-4 border-t border-slate-100 flex justify-between items-center text-xs shrink-0 z-10 bg-white">
-          <div className="flex flex-col items-start truncate max-w-[30%]">
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Min</span>
-            <span className="font-medium text-slate-700">{stats.min}{unit ? ` ${unit}` : ''} | {stats.minTime}</span>
-          </div>
-          <div className="flex flex-col items-center truncate max-w-[30%]">
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Avg</span>
-            <span className="font-medium text-slate-700">{stats.avg}{unit ? ` ${unit}` : ''}</span>
-          </div>
-          <div className="flex flex-col items-end truncate max-w-[30%]">
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Max</span>
-            <span className="font-medium text-slate-700">{stats.max}{unit ? ` ${unit}` : ''} | {stats.maxTime}</span>
-          </div>
+      {stats && showFooter && (
+        <div className="mt-auto pt-2 pb-2 px-4 border-t border-slate-100 flex justify-between items-center text-xs shrink-0 z-10 bg-white gap-4 w-full">
+          {showMin && (
+            <div className={`flex flex-col truncate flex-1 ${(!showAvg && !showMax) ? 'items-center text-center' : 'items-start text-left'}`}>
+              <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Min</span>
+              <span className="font-medium text-slate-700 truncate w-full">{stats.min}{unit ? ` ${unit}` : ''} | {stats.minTime}</span>
+            </div>
+          )}
+          
+          {showAvg && (
+            <div className="flex flex-col items-center text-center truncate flex-1">
+              <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Avg</span>
+              <span className="font-medium text-slate-700 truncate w-full">{stats.avg}{unit ? ` ${unit}` : ''}</span>
+            </div>
+          )}
+
+          {showMax && (
+            <div className={`flex flex-col truncate flex-1 ${(!showAvg && !showMin) ? 'items-center text-center' : 'items-end text-right'}`}>
+              <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">Max</span>
+              <span className="font-medium text-slate-700 truncate w-full">{stats.max}{unit ? ` ${unit}` : ''} | {stats.maxTime}</span>
+            </div>
+          )}
         </div>
       )}
     </Card>

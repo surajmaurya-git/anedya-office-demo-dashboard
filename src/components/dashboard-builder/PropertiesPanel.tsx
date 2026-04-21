@@ -56,20 +56,20 @@ export default function PropertiesPanel() {
 
         <div className="space-y-2">
           <Label>Title</Label>
-          <Input 
+          <Input
             value={draftTitle}
             onChange={(e) => handleTitleChange(e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Device Data Key (API binding)</Label>
-          <Input 
-            placeholder="e.g. temperature" 
+          <Label>Variable / Key</Label>
+          <Input
+            placeholder="e.g. temperature"
             value={draftConfig.deviceKey || ''}
             onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
           />
-          <p className="text-xs text-muted-foreground">The identifier in the Anedya API response</p>
+          {/* <p className="text-xs text-muted-foreground">The identifier in the Anedya API response</p> */}
         </div>
 
         {/* Dynamic fields based on type */}
@@ -77,26 +77,26 @@ export default function PropertiesPanel() {
           <>
             <div className="space-y-2">
               <Label>Unit symbol</Label>
-              <Input 
-                placeholder="e.g. °C, %" 
+              <Input
+                placeholder="e.g. °C, %"
                 value={draftConfig.unit || ''}
                 onChange={(e) => handleConfigChange({ unit: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>Minimum Value</Label>
-              <Input 
+              <Input
                 type="number"
-                placeholder="e.g. -50" 
+                placeholder="e.g. -50"
                 value={draftConfig.min !== undefined ? draftConfig.min : ''}
                 onChange={(e) => handleConfigChange({ min: e.target.value ? Number(e.target.value) : undefined })}
               />
             </div>
             <div className="space-y-2">
               <Label>Maximum Value</Label>
-              <Input 
+              <Input
                 type="number"
-                placeholder="e.g. 50" 
+                placeholder="e.g. 50"
                 value={draftConfig.max !== undefined ? draftConfig.max : ''}
                 onChange={(e) => handleConfigChange({ max: e.target.value ? Number(e.target.value) : undefined })}
               />
@@ -108,20 +108,63 @@ export default function PropertiesPanel() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Unit symbol</Label>
-              <Input 
-                placeholder="e.g. °C, %" 
+              <Input
+                placeholder="e.g. °C, %"
                 value={draftConfig.unit || ''}
                 onChange={(e) => handleConfigChange({ unit: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>Stroke Color</Label>
-              <Input 
+              <Input
                 type="color"
-                className="h-10 px-2"
+                className="h-8 px-2"
                 value={draftConfig.strokeColor || '#0ea5e9'}
                 onChange={(e) => handleConfigChange({ strokeColor: e.target.value })}
               />
+            </div>
+            <div className="space-y-3 pt-2 border-t text-sm">
+              <Label>Display Options</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showLatest"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  checked={draftConfig.showLatest !== false}
+                  onChange={(e) => handleConfigChange({ showLatest: e.target.checked })}
+                />
+                <Label htmlFor="showLatest" className="font-normal cursor-pointer text-sm">Show Latest Value</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showMin"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  checked={draftConfig.showMin !== false}
+                  onChange={(e) => handleConfigChange({ showMin: e.target.checked })}
+                />
+                <Label htmlFor="showMin" className="font-normal cursor-pointer text-sm">Show Min Value</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showAvg"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  checked={draftConfig.showAvg !== false}
+                  onChange={(e) => handleConfigChange({ showAvg: e.target.checked })}
+                />
+                <Label htmlFor="showAvg" className="font-normal cursor-pointer text-sm">Show Average Value</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="showMax"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  checked={draftConfig.showMax !== false}
+                  onChange={(e) => handleConfigChange({ showMax: e.target.checked })}
+                />
+                <Label htmlFor="showMax" className="font-normal cursor-pointer text-sm">Show Max Value</Label>
+              </div>
             </div>
           </div>
         )}
@@ -130,8 +173,8 @@ export default function PropertiesPanel() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Data Source</Label>
-              <Select 
-                value={draftConfig.dataSource || 'valuestore'} 
+              <Select
+                value={draftConfig.dataSource || 'valuestore'}
                 onValueChange={(val) => handleConfigChange({ dataSource: val })}
               >
                 <SelectTrigger>
@@ -143,15 +186,15 @@ export default function PropertiesPanel() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {(draftConfig.dataSource || 'valuestore') === 'valuestore' 
+                {(draftConfig.dataSource || 'valuestore') === 'valuestore'
                   ? 'Fetches value from Anedya ValueStore API'
                   : 'Fetches latest data point from Anedya Data API'}
               </p>
             </div>
             <div className="space-y-2">
               <Label>Unit symbol</Label>
-              <Input 
-                placeholder="e.g. °C, %" 
+              <Input
+                placeholder="e.g. °C, %"
                 value={draftConfig.unit || ''}
                 onChange={(e) => handleConfigChange({ unit: e.target.value })}
               />
@@ -274,8 +317,8 @@ export default function PropertiesPanel() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Data Source</Label>
-              <Select 
-                value={draftConfig.dataSource || 'valuestore'} 
+              <Select
+                value={draftConfig.dataSource || 'valuestore'}
                 onValueChange={(val) => handleConfigChange({ dataSource: val })}
               >
                 <SelectTrigger>
@@ -287,15 +330,15 @@ export default function PropertiesPanel() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {(draftConfig.dataSource || 'valuestore') === 'valuestore' 
+                {(draftConfig.dataSource || 'valuestore') === 'valuestore'
                   ? 'Read & write via Anedya ValueStore API'
                   : 'Read-only from Anedya Data API (Set disabled)'}
               </p>
             </div>
             <div className="space-y-2">
               <Label>Unit symbol</Label>
-              <Input 
-                placeholder="e.g. °C, seconds" 
+              <Input
+                placeholder="e.g. °C, seconds"
                 value={draftConfig.unit || ''}
                 onChange={(e) => handleConfigChange({ unit: e.target.value })}
               />
