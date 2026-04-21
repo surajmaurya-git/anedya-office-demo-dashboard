@@ -6,6 +6,7 @@ import { HistoricalTrendWidget } from './HistoricalTrendWidget';
 import { ValueDisplayWidget } from './ValueDisplayWidget';
 import { ValueStoreWidget } from './ValueStoreWidget';
 import { DonutChartWidget } from './DonutChartWidget';
+import { ToggleSwitchWidget } from './ToggleSwitchWidget';
 import { useWidgetData } from '@/hooks/useWidgetData';
 
 interface WidgetRendererProps {
@@ -89,6 +90,15 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
     case 'DonutChartWidget':
       return (
         <DonutChartWidget
+          config={config}
+          nodeId={nodeId}
+          pollIntervalMs={pollIntervalMs}
+          isEditMode={isEditMode}
+        />
+      );
+    case 'ToggleSwitchWidget':
+      return (
+        <ToggleSwitchWidget
           config={config}
           nodeId={nodeId}
           pollIntervalMs={pollIntervalMs}

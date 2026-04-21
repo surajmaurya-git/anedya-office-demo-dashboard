@@ -530,6 +530,111 @@ export default function PropertiesPanel() {
           );
         })()}
 
+        {/* ── ToggleSwitchWidget ───────────────────────────────────── */}
+        {widget.type === 'ToggleSwitchWidget' && (
+          <div className="space-y-4">
+
+            {/* ValueStore key */}
+            <div className="space-y-2">
+              <Label>ValueStore Key</Label>
+              <Input
+                placeholder="e.g. generator_state"
+                value={draftConfig.deviceKey || ''}
+                onChange={(e) => handleConfigChange({ deviceKey: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                The key in Anedya ValueStore that holds this toggle's state.
+              </p>
+            </div>
+
+            {/* Data Type */}
+            <div className="space-y-2">
+              <Label>Expected Data Type</Label>
+              <Select
+                value={draftConfig.dataType || 'auto'}
+                onValueChange={(val) => handleConfigChange({ dataType: val === 'auto' ? undefined : val })}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Auto-detect" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto-detect (Default)</SelectItem>
+                  <SelectItem value="boolean">Boolean (true / false)</SelectItem>
+                  <SelectItem value="float">Number</SelectItem>
+                  <SelectItem value="string">String</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* ON / OFF raw values */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Value when ON</Label>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="1"
+                  value={draftConfig.onValue ?? '1'}
+                  onChange={(e) => handleConfigChange({ onValue: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Value when OFF</Label>
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="0"
+                  value={draftConfig.offValue ?? '0'}
+                  onChange={(e) => handleConfigChange({ offValue: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Status labels */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">Status Labels</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">ON label</Label>
+                  <Input
+                    className="h-8 text-xs"
+                    placeholder="Active"
+                    value={draftConfig.onLabel || ''}
+                    onChange={(e) => handleConfigChange({ onLabel: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">OFF label</Label>
+                  <Input
+                    className="h-8 text-xs"
+                    placeholder="Inactive"
+                    value={draftConfig.offLabel || ''}
+                    onChange={(e) => handleConfigChange({ offLabel: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ON colour */}
+            <div className="space-y-2 border-t pt-3">
+              <Label className="flex items-center gap-1.5">
+                <Palette className="h-3.5 w-3.5" />
+                ON Colour
+              </Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="color"
+                  className="h-8 w-12 p-0.5 cursor-pointer"
+                  value={draftConfig.onColor || '#22c55e'}
+                  onChange={(e) => handleConfigChange({ onColor: e.target.value })}
+                />
+                <span className="text-xs text-muted-foreground">
+                  Used for the pill, status label, and glow effect when ON.
+                </span>
+              </div>
+            </div>
+
+          </div>
+        )}
+
       </div>
     </div>
   );

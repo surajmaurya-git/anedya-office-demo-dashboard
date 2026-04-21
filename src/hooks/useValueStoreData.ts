@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface ValueStoreResult {
-  value: string | number | null;
+  value: string | number | boolean | null;
   created: number | null;   // epoch seconds
   modified: number | null;  // epoch seconds
   isLoading: boolean;
   isSetting: boolean;
   error: string | null;
-  setValue: (newValue: string | number) => Promise<boolean>;
+  setValue: (newValue: string | number | boolean, explicitType?: 'string' | 'float' | 'boolean') => Promise<boolean>;
   refetch: () => void;
 }
 
@@ -21,7 +21,7 @@ export function useValueStoreData(
   key: string | undefined,
   pollIntervalMs = 0
 ): ValueStoreResult {
-  const [value, setValueState] = useState<string | number | null>(null);
+  const [value, setValueState] = useState<string | number | boolean | null>(null);
   const [created, setCreated] = useState<number | null>(null);
   const [modified, setModified] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +66,7 @@ export function useValueStoreData(
     }
   }, [nodeId, key]);
 
-  const setValueOnServer = useCallback(async (newValue: string | number): Promise<boolean> => {
+  const setValueOnServer = useCallback(async (newValue: string | number | boolean, explicitType?: 'string' | 'float' | 'boolean'): Promise<boolean> => {
     if (!nodeId || !key) return false;
 
     setIsSetting(true);
@@ -74,8 +74,26 @@ export function useValueStoreData(
       const apiKey = import.meta.env.VITE_ANEDYA_API_KEY;
 
       // Determine type
-      const numericVal = Number(newValue);
-      const isNumeric = !isNaN(numericVal) && String(newValue).trim() !== '';
+      let finalValue: any = newValue;
+      let finalType: string = 'string';
+
+      if (explicitType === 'boolean') {
+        const lower = String(newValue).toLowerCase();
+        finalValue = lower === 'true' || lower === '1';
+        finalType = 'boolean';
+      } else if (explicitType === 'float') {
+        finalValue = Number(newValue);
+        finalType = 'float';
+      } else if (explicitType === 'string') {
+        finalValue = String(newValue);
+        finalType = 'string';
+      } else {
+        // Fallback auto-detection if no explicit type provided
+        const numericVal = Number(newValue);
+        const isNumeric = !isNaN(numericVal) && String(newValue).trim() !== '';
+        finalValue = isNumeric ? numericVal : String(newValue);
+        finalType = isNumeric ? 'float' : 'string';
+      }
 
       const res = await fetch('https://api.anedya.io/v1/valuestore/setValue', {
         method: 'POST',
@@ -86,8 +104,8 @@ export function useValueStoreData(
         body: JSON.stringify({
           namespace: { scope: 'node', id: nodeId },
           key,
-          value: isNumeric ? numericVal : String(newValue),
-          type: isNumeric ? 'float' : 'string',
+          value: finalValue,
+          type: finalType,
         }),
       });
 
