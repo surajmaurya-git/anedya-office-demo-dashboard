@@ -12,6 +12,7 @@ import { SliderWidget } from './SliderWidget';
 import { TankWidget } from './TankWidget';
 import { SparklineWidget } from './SparklineWidget';
 import { useWidgetData } from '@/hooks/useWidgetData';
+import { AlertTriangle, HelpCircle, FileQuestion } from 'lucide-react';
 
 interface WidgetRendererProps {
   config: WidgetConfig;
@@ -51,7 +52,12 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
   const { config, nodeId, pollIntervalMs, isEditMode } = props;
 
   if (!config) {
-    return <div className="p-4 opacity-50 bg-muted rounded text-muted-foreground">Invalid Widget</div>;
+    return (
+      <Card className="w-full h-full flex flex-col items-center justify-center bg-destructive/5 border-destructive/20 text-destructive p-4 min-h-[100px]">
+        <AlertTriangle className="h-8 w-8 mb-2 opacity-40" />
+        <span className="text-xs font-bold uppercase tracking-tighter opacity-80">Invalid Configuration</span>
+      </Card>
+    );
   }
 
   switch (config.type) {
@@ -147,8 +153,22 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
       );
     default:
       return (
-        <Card className="w-full h-full flex items-center justify-center bg-muted/30 text-muted-foreground">
-          Unknown Widget: {config.type}
+        <Card className="w-full h-full flex flex-col items-center justify-center bg-muted/20 border-dashed border-2 border-muted-foreground/10 text-muted-foreground p-4 min-h-[100px]">
+          <FileQuestion className="h-10 w-10 mb-3 opacity-20" />
+          <div className="text-center group">
+            <p className="text-xs font-bold text-muted-foreground/60 mb-2 uppercase tracking-widest text-balance">
+              Unsupported Widget
+            </p>
+            <div className="inline-flex items-center gap-1.5 bg-background/50 px-3 py-1 rounded-full border border-border shadow-sm mb-3">
+              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-foreground/70">
+                {String(config.type)}
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-relaxed max-w-[180px] mx-auto italic opacity-70">
+              Kindly sync your cloned repository on GitHub.
+            </p>
+          </div>
         </Card>
       );
   }
