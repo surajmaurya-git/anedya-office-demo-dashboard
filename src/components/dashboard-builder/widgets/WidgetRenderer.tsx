@@ -10,6 +10,7 @@ import { ToggleSwitchWidget } from './ToggleSwitchWidget';
 import { BatteryWidget } from './BatteryWidget';
 import { SliderWidget } from './SliderWidget';
 import { TankWidget } from './TankWidget';
+import { SparklineWidget } from './SparklineWidget';
 import { useWidgetData } from '@/hooks/useWidgetData';
 
 interface WidgetRendererProps {
@@ -129,6 +130,15 @@ export default function WidgetRenderer(props: WidgetRendererProps) {
     case 'TankWidget':
       return (
         <TankWidget
+          config={config}
+          nodeId={nodeId}
+          pollIntervalMs={pollIntervalMs}
+          isEditMode={isEditMode}
+        />
+      );
+    case 'SparklineWidget':
+      return (
+        <SparklineWidget
           config={config}
           nodeId={nodeId}
           pollIntervalMs={pollIntervalMs}

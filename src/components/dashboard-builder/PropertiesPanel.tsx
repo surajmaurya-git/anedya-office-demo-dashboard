@@ -107,6 +107,37 @@ export default function PropertiesPanel() {
           </>
         )}
 
+        {widget.type === 'SparklineWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Unit symbol</Label>
+              <Input
+                placeholder="e.g. °C, %"
+                value={draftConfig.unit || ''}
+                onChange={(e) => handleConfigChange({ unit: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Sparkline Base Color</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="color"
+                  value={draftConfig.strokeColor || '#22c55e'}
+                  onChange={(e) => handleConfigChange({ strokeColor: e.target.value })}
+                  className="w-12 h-8 p-1 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  placeholder="#22c55e"
+                  value={draftConfig.strokeColor || '#22c55e'}
+                  onChange={(e) => handleConfigChange({ strokeColor: e.target.value })}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {widget.type === 'HistoricalTrendWidget' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
