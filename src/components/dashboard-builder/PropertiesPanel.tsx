@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Plus, X, Palette, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ValueMapping } from './widgets/ValueDisplayWidget';
 import type { DonutSeries } from './widgets/DonutChartWidget';
@@ -70,14 +71,14 @@ export default function PropertiesPanel() {
             <div className="space-y-2">
               <Label>Data Source</Label>
               <Select
-                value={draftConfig.dataSource || (['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget'].includes(widget.type) ? 'variable' : 'valuestore')}
+                value={draftConfig.dataSource || (['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget', 'MapWidget'].includes(widget.type) ? 'variable' : 'valuestore')}
                 onValueChange={(val) => handleConfigChange({ dataSource: val })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select data source" />
                 </SelectTrigger>
                 <SelectContent>
-                  {!['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget'].includes(widget.type) && (
+                  {!['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget', 'MapWidget'].includes(widget.type) && (
                     <SelectItem value="valuestore">Valuestore</SelectItem>
                   )}
                   {!['ToggleSwitchWidget', 'SliderWidget'].includes(widget.type) && (
@@ -88,7 +89,7 @@ export default function PropertiesPanel() {
             </div>
             <div className="space-y-2">
               <Label>
-                { (draftConfig.dataSource === 'variable' || (['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget'].includes(widget.type) && !draftConfig.dataSource)) 
+                { (draftConfig.dataSource === 'variable' || (['HistoricalTrendWidget', 'SparklineWidget', 'GaugeWidget', 'MapWidget'].includes(widget.type) && !draftConfig.dataSource)) 
                   ? 'Variable Identifier' : 'Key' }
               </Label>
               <Input
@@ -284,6 +285,59 @@ export default function PropertiesPanel() {
                 />
                 <Label htmlFor="showTable" className="font-normal cursor-pointer text-sm">Show Data Table</Label>
               </div>
+            </div>
+          </div>
+        )}
+
+        {widget.type === 'MapWidget' && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label title="Maximum number of points to fetch">Data Limit</Label>
+              <Input
+                type="number"
+                placeholder="1000"
+                className="h-8"
+                min={1}
+                max={10000}
+                value={draftConfig.limit || ''}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : undefined;
+                  handleConfigChange({ limit: val !== undefined ? Math.min(val, 10000) : undefined });
+                }}
+              />
+              <p className="text-[10px] text-muted-foreground italic">
+                Max: 10,000 points.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Path Color</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="color"
+                  value={draftConfig.pathColor || '#2563eb'}
+                  onChange={(e) => handleConfigChange({ pathColor: e.target.value })}
+                  className="w-12 h-8 p-1 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  placeholder="#2563eb"
+                  value={draftConfig.pathColor || '#2563eb'}
+                  onChange={(e) => handleConfigChange({ pathColor: e.target.value })}
+                  className="flex-1 h-8"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 border-t mt-2">
+              <div className="space-y-0.5">
+                <Label className="text-xs">Show History Table</Label>
+                <p className="text-[10px] text-muted-foreground">
+                  Display location history table next to map.
+                </p>
+              </div>
+              <Switch
+                checked={draftConfig.showTable || false}
+                onCheckedChange={(checked) => handleConfigChange({ showTable: checked })}
+              />
             </div>
           </div>
         )}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gauge, LineChart, Hash, Settings, PieChart, ToggleRight, Battery, SlidersHorizontal, Cylinder, Activity } from 'lucide-react';
+import { Gauge, LineChart, Hash, Settings, PieChart, ToggleRight, Battery, SlidersHorizontal, Cylinder, Activity, Map as MapIcon } from 'lucide-react';
 import { useBuilderStore } from '../../store/useBuilderStore';
 import { WIDGET_SIZE_CONSTRAINTS } from './widgetConfig';
 
@@ -15,6 +15,7 @@ const WIDGET_TYPES = [
   { id: 'SliderWidget',       name: 'Slider',                icon: <SlidersHorizontal size={18} /> },
   { id: 'TankWidget',         name: 'Tank Level',            icon: <Cylinder size={18} /> },
   { id: 'SparklineWidget',    name: 'Sparkline Trend',       icon: <Activity size={18} /> },
+  { id: 'MapWidget',          name: 'Map',                   icon: <MapIcon size={18} /> },
 ];
 
 export default function ComponentSidebar() {
